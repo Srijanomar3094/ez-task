@@ -22,3 +22,7 @@ ezenv/
 *.swo
 htmlcov/
 .coverage
+*.docx
+*.pptx
+*.xlsx
+*.xls

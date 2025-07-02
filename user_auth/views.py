@@ -10,7 +10,6 @@ import random
 import datetime
 from django.conf import settings
 from django.core.mail import EmailMessage, get_connection
-from django.views.decorators.csrf import csrf_exempt
 
 def user_registration(request):
     if request.method == 'POST':

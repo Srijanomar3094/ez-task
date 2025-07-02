@@ -1,5 +1,4 @@
 import os
-import mimetypes
 from django.http import JsonResponse, FileResponse, HttpResponseForbidden, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
@@ -11,7 +10,6 @@ from .models import File
 from django.core.files.storage import default_storage
 from django.urls import reverse
 from cryptography.fernet import Fernet
-import json
 import datetime
 
 

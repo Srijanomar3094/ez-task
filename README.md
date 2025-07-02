@@ -1,127 +1,148 @@
-# Ez-Task: Secure File-Sharing System
+# Ez-Task: File Sharing System
 
-## Overview
-A secure file-sharing system built with Django (no DRF, no Django admin) and MySQL, supporting two user types: Ops and Client. Features email verification, role-based access, secure file upload/download, and encrypted download links.
+A Django-based file sharing application with role-based access control and email verification.
 
 ## Features
-- **User Registration & Login** (email/password, with name and role)
-- **Email Verification** (must verify before registering)
-- **Role-based Access** (Ops: upload, Client: download/list)
-- **File Upload** (Ops only, pptx/docx/xlsx)
-- **File Listing** (Client only)
-- **Secure Download Links** (encrypted, user-bound)
-- **Environment Variables** for all secrets
+
+- **User Authentication**: Registration, login, logout with email verification
+- **Role-Based Access**: Two user types (Ops, Client) with different permissions
+- **File Management**: Upload, list, and secure download of files
+- **File Type Validation**: Supports .pptx, .docx, .xlsx files only
+- **Secure Downloads**: Encrypted download links with user validation
+
+## Project Structure
+
+```
+ez-task/
+├── ezshare/                 # Django project settings
+│   ├── settings.py         # Main configuration
+│   ├── urls.py            # Root URL patterns
+│   └── wsgi.py            # WSGI configuration
+├── user_auth/              # User authentication app
+│   ├── models.py          # User and Role models
+│   ├── views.py           # Auth views (register, login, verify)
+│   ├── urls.py            # Auth URL patterns
+│   └── tests.py           # Authentication tests
+├── share/                  # File sharing app
+│   ├── models.py          # File model
+│   ├── views.py           # File operations views
+│   ├── urls.py            # File sharing URL patterns
+│   └── tests.py           # File sharing tests
+├── requirements.txt        # Python dependencies
+├── manage.py              # Django management script
+└── .env                   # Environment variables
+```
 
 ## Setup
 
-### 1. Clone the Repo
+### 1. Clone Repository
 ```bash
-git clone <repo-url>
-cd Ez-task
+git clone https://github.com/Srijanomar3094/ez-task.git
+cd ez-task
 ```
 
-### 2. Create & Activate Virtual Environment
+### 2. Create Virtual Environment
 ```bash
-python3 -m venv ezenv
-source ezenv/bin/activate
+python3 -m venv venv
+source venv/bin/activate 
 ```
 
-### 3. Install Requirements
+### 3. Install Dependencies
 ```bash
-pip install django mysqlclient python-dotenv cryptography
+pip install -r requirements.txt
 ```
 
-### 4. MySQL Setup
-- Create a database (e.g. `ez`)
-- Update `.env` with your DB credentials
-
-### 5. Configure `.env`
-```
-SECRET_KEY=your-django-secret
+### 4. Environment Configuration
+Create `.env` file:
+```env
+SECRET_KEY=your_django_secret_key
 DEBUG=True
-DB_NAME=ez
-DB_USER=youruser
-DB_PASSWORD=yourpass
+DB_NAME=ezshare
+DB_USER=your_db_user
+DB_PASSWORD=your_db_password
 DB_HOST=localhost
 DB_PORT=3306
 EMAIL_HOST=smtp.gmail.com
 EMAIL_PORT=587
 EMAIL_USE_TLS=True
-EMAIL_HOST_USER=yourgmail@gmail.com
-EMAIL_HOST_PASSWORD=your_app_password
+EMAIL_HOST_USER=your_email@gmail.com
+EMAIL_HOST_PASSWORD=your_gmail_app_password
 ```
-- **EMAIL_HOST_PASSWORD:** Must be a Gmail App Password (not your regular password)
 
-### 6. Migrate
+### 5. Database Setup
 ```bash
 python manage.py makemigrations
 python manage.py migrate
 ```
 
-### 7. Run Server
+### 6. Run Server
 ```bash
 python manage.py runserver
 ```
 
 ## API Endpoints
 
-### **User APIs**
-- `POST /api/verify/` — Request/verify email code
-- `POST /api/user_registration/` — Register (after verifying email)
-- `POST /api/login_view/` — Login
-- `GET /api/logout_view/` — Logout
+### Authentication
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/verify/` | Request/verify email code |
+| POST | `/api/user_registration/` | Register user |
+| POST | `/api/login_view/` | User login |
+| GET | `/api/logout_view/` | User logout |
 
-### **File APIs**
-- `POST /api/upload/` — Upload file (Ops only, form-data: file)
-- `GET /api/list/` — List files (Client only)
-- `GET /api/download-file/<file_id>/` — Get secure download link (Client only)
-- `GET /api/secure-download/<token>/` — Download file (Client only)
+### File Operations
+| Method | Endpoint | Description | Role Required |
+|--------|----------|-------------|---------------|
+| POST | `/api/upload/` | Upload file | Ops |
+| GET | `/api/list/` | List files | Client |
+| GET | `/api/download-file/<id>/` | Get download link | Client |
+| GET | `/api/secure-download/<token>/` | Download file | Client |
 
-## Example Requests
+## API Testing
 
-### Registration
-```json
-{
-  "email": "user@example.com",
-  "password": "Test@1234",
-  "role": "Ops",
-  "name": "User Name"
-}
-```
+For testing the APIs, import the Postman collection file `ez.postman_collection.json` into Postman. The collection includes pre-configured requests for all endpoints with example data and proper authentication setup.
 
-### Email Verification
-```json
-{
-  "email": "user@example.com"
-}
-// then
-{
-  "email": "user@example.com",
-  "code": "1234"
-}
-```
+## User Roles
 
-### Upload File (Ops)
-- POST `/api/upload/`
-- Form-data: `file` (pptx/docx/xlsx)
+### Ops Users
+- Can upload files (.pptx, .docx, .xlsx)
+- Cannot list or download files
 
-### List Files (Client)
-- GET `/api/list/`
+### Client Users
+- Can list all uploaded files
+- Can download files via secure links
+- Cannot upload files
 
-### Download File (Client)
-- GET `/api/download-file/<file_id>/`
-- GET `/api/secure-download/<token>/`
-
-## Deployment Notes
-- Use Gunicorn + Nginx for production
-- Set `DEBUG=False` and configure `ALLOWED_HOSTS`
-- Store `.env` securely (never commit to git)
-- Use S3 or similar for file storage in production
-- Use HTTPS
+## File Types Supported
+- **PowerPoint**: .pptx
+- **Word**: .docx  
+- **Excel**: .xlsx
 
 ## Testing
-- Use Postman or curl for API testing
-- Write Django `TestCase` classes for automated tests (recommended)
+
+### Run All Tests
+```bash
+python manage.py test
+```
+
+### Run Specific Test Suites
+```bash
+python manage.py test user_auth.tests
+python manage.py test share.tests
+```
+
+## Dependencies
+
+- **Django 4.2.7**: Web framework
+- **mysqlclient 2.2.0**: MySQL database adapter
+- **python-dotenv 1.0.0**: Environment variable management
+- **cryptography 41.0.7**: Encryption for secure downloads
+- **gunicorn 21.2.0**: WSGI server for production
+
+## Deployment
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for production deployment instructions.
 
 ## License
-MIT 
+
+MIT License 
